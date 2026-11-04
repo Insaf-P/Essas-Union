@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stylescape Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;700&family=Lato:wght@400;700&family=Fredoka:wght@500;600&family=Nunito:wght@400;700&family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:wght@500;700&family=Work+Sans:wght@400;500&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f5f2;--ink:#161616;--mute:#6b6b6b;--line:#e2e0da;--accent:#161616}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Inter','Cairo',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+.wrap{max-width:1200px;margin:0 auto;padding:40px 20px 80px}
+h1{font-size:clamp(28px,4vw,44px);letter-spacing:-.02em;line-height:1.1}
+.sub{color:var(--mute);margin:10px 0 28px;max-width:560px}
+form{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;align-items:end;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}
+label.wide{grid-column:1/4}
+label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+input,select{font:inherit;font-size:15px;color:var(--ink);padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;text-transform:none;letter-spacing:0;font-weight:500;width:100%}
+input:focus,select:focus{outline:2px solid var(--ink);outline-offset:1px}
+button{font:inherit;font-weight:600;cursor:pointer;border:0;border-radius:10px;padding:13px 22px;background:var(--ink);color:#fff}
+button:hover{opacity:.88}
+button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.actions{display:none;gap:10px;margin:22px 0 14px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.actions .l{color:var(--mute);font-size:14px}
+.board{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:92px;gap:14px}
+.tile{border-radius:var(--r,18px);overflow:hidden;position:relative;padding:22px;display:flex;flex-direction:column;justify-content:space-between;animation:pop .4s ease-out}
+@keyframes pop{from{transform:translateY(12px)}to{transform:none}}
+.t-word{grid-column:1/8;grid-row:1/5;align-items:flex-start;justify-content:center}
+.t-pal{grid-column:8/13;grid-row:1/5;padding:0;flex-direction:row}
+.t-mark{grid-column:1/4;grid-row:5/9;align-items:center;justify-content:center}
+.t-pat{grid-column:4/8;grid-row:5/9;padding:0}
+.t-type{grid-column:8/13;grid-row:5/9}
+.t-shape{grid-column:1/6;grid-row:9/13;padding:0}
+.t-ui{grid-column:6/10;grid-row:9/13}
+.t-tag{grid-column:10/13;grid-row:9/13}
+.sw{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:14px 10px;font-size:12px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+.sw small{display:block;opacity:.7;font-weight:400;font-family:'Inter',sans-serif;margin-bottom:4px}
+.word{font-size:clamp(40px,8vw,104px);line-height:1;word-break:break-word}
+.cap{font-size:11px;text-transform:uppercase;letter-spacing:.1em;opacity:.65;font-weight:600}
+.aa{font-size:96px;line-height:.9}
+.tile svg{display:block;width:100%;height:100%}
+.chip{display:inline-block;padding:6px 12px;border-radius:99px;font-size:13px;font-weight:600;margin:0 6px 6px 0}
+.uib{padding:12px 20px;font-weight:600;font-size:14px;width:fit-content}
+.uic{padding:14px;font-size:13px;line-height:1.4}
+.variant{margin-bottom:64px}
+.vhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:40px 0 14px;font-size:15px}
+.vhead small{color:var(--mute);font-size:13px;margin-left:8px}
+.sw2{display:inline-block;width:18px;height:18px;border-radius:50%;margin-left:6px;border:1px solid rgba(0,0,0,.12);vertical-align:middle}
+.mockh{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--mute);margin:34px 0 14px;font-weight:600}
+.m-web{grid-column:1/8;grid-row:1/6;padding:28px}
+.m-phone{grid-column:8/13;grid-row:1/6;align-items:center;justify-content:center}
+.m-card{grid-column:1/6;grid-row:6/10;align-items:center;justify-content:center}
+.m-social{grid-column:6/9;grid-row:6/10;padding:0}
+.m-tote{grid-column:9/13;grid-row:6/10;align-items:center;justify-content:center}
+.m-sign{grid-column:1/13;grid-row:10/14;padding:0;justify-content:flex-start}
+.empty{padding:60px 20px;text-align:center;color:var(--mute);border:2px dashed var(--line);border-radius:18px;margin-top:22px}
+.modal{position:fixed;inset:0;background:rgba(10,10,12,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;backdrop-filter:blur(3px)}
+.modal.open{display:flex}
+.mbox{background:#fff;border-radius:18px;padding:28px;width:100%;max-width:420px;box-shadow:0 30px 60px -20px rgba(0,0,0,.5);position:relative}
+.mbox h3{font-size:22px;letter-spacing:-.01em;margin-bottom:6px}
+.mbox p{color:var(--mute);font-size:14px;margin-bottom:18px}
+.mbox form{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:0;border:0;background:none;border-radius:0}
+.mbox .x{position:absolute;right:14px;top:12px;background:none;color:var(--ink);font-size:24px;padding:4px 10px;line-height:1}
+.mbox .err{color:#c0262d;font-size:12px;text-transform:none;letter-spacing:0;font-weight:500;min-height:0}
+.mbox input.bad{border-color:#c0262d}
+.mbox button[type=submit]{margin-top:4px;width:100%}
+.mbox.wide{max-width:640px;max-height:92vh;overflow:auto}
+.dl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:6px 0 14px}
+.dl-grid figure{margin:0;display:flex;flex-direction:column;gap:8px}
+.dl-grid img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top;border:1px solid var(--line);border-radius:8px;background:#f6f5f2}
+.dl-grid figcaption{font-size:12px;font-weight:600;color:var(--mute)}
+.btn{display:block;text-align:center;text-decoration:none;font-weight:600;font-size:13px;padding:10px 8px;border-radius:9px;background:var(--ink);color:#fff;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.mbox .fine{font-size:11px;color:var(--mute);margin:12px 0 0;text-align:center}
+@media(max-width:900px){
+ form{grid-template-columns:1fr 1fr}form label:first-child,form label.wide{grid-column:1/3}form button{grid-column:1/3}
+ .board{grid-template-columns:1fr 1fr;grid-auto-rows:auto}
+ .tile{grid-column:auto!important;grid-row:auto!important;min-height:220px}
+ .t-word,.t-pal,.m-web,.m-sign{grid-column:1/3!important}.t-pal{min-height:200px}
+ .m-web,.m-phone,.m-card,.m-social,.m-tote{min-height:360px}.m-phone,.m-card,.m-social,.m-tote{grid-column:1/3!important}.m-sign{min-height:300px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Generate your brand stylescape</h1>
+  <p class="sub">Type your brand name, pick three options, and get an instant visual direction: palette, type, pattern, shapes and UI feel.</p>
+
+  <form id="f">
+    <label>Brand name<input id="brand" required maxlength="30" placeholder="e.g. Nova, نخلة, Oasis Labs"></label>
+    <label>Industry
+      <select id="industry">
+        <option value="tech">Technology</option><option value="real">Real estate</option><option value="food">Food &amp; café</option>
+        <option value="health">Healthcare</option><option value="fashion">Fashion &amp; beauty</option><option value="finance">Finance</option><option value="edu">Education</option>
+      </select></label>
+    <label>Style
+      <select id="style">
+        <option value="bold">Bold</option><option value="elegant">Elegant</option><option value="playful">Playful</option>
+        <option value="minimal">Minimal</option><option value="techy">Futuristic</option><option value="warm">Warm &amp; human</option>
+      </select></label>
+    <label>Colors
+      <select id="color">
+        <option value="vibrant">Vibrant</option><option value="warm">Warm</option><option value="cool">Cool</option>
+        <option value="earthy">Earthy</option><option value="pastel">Pastel</option><option value="mono">Monochrome</option>
+      </select></label>
+    <label class="wide"><span>Brand description <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></span><input id="desc" maxlength="160" placeholder="e.g. A modern coffee roaster serving specialty beans to young professionals"></label>
+    <button type="button" id="go">Generate</button>
+  </form>
+
+  <div class="actions" id="actions">
+    <span class="l" id="meta"></span>
+    <span style="display:flex;gap:10px"><button class="ghost" id="shuffle" type="button">↻ Shuffle</button><button id="save" type="button">Download PNG</button></span>
+  </div>
+  <div class="empty" id="empty">Your stylescape will appear here.</div>
+  <div id="capture"></div>
+</div>
+
+<div class="modal" id="lead" role="dialog" aria-modal="true" aria-labelledby="leadT">
+  <div class="mbox">
+    <button class="x" id="leadX" type="button" aria-label="Close">×</button>
+    <div id="leadForm">
+    <h3 id="leadT">Download your stylescape</h3>
+    <p>Enter your details and your PNG will download right away.</p>
+    <form id="leadF" novalidate>
+      <label>Name<input id="lName" autocomplete="name" placeholder="Your full name"><span class="err" id="eName"></span></label>
+      <label>Email<input id="lEmail" type="email" autocomplete="email" placeholder="you@company.com"><span class="err" id="eEmail"></span></label>
+      <label>Phone<input id="lPhone" type="tel" autocomplete="tel" placeholder="+966 5X XXX XXXX"><span class="err" id="ePhone"></span></label>
+      <span class="err" id="leadErr"></span>
+      <button type="submit" id="leadGo">Download PNG</button>
+    </form>
+    <p class="fine">We’ll only use your details to follow up about your brand.</p>
+    </div>
+    <div id="leadDone" style="display:none">
+      <h3>Your stylescape is ready</h3>
+      <p>If the download didn’t start automatically, use the buttons below. You can also open an image and save it from there.</p>
+      <div class="dl-grid" id="dlGrid"></div>
+      <a class="btn" id="dlAll">Download all three in one image</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function hash(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}return h>>>0}
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hsl(h,s,l){h=((h%360)+360)%360;s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l);
+ const f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
+ return '#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('')}
+function lum(hex){const [r,g,b]=[1,3,5].map(i=>parseInt(hex.substr(i,2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*r+.7152*g+.0722*b}
+const on=hex=>lum(hex)>.45?'#161616':'#ffffff';
+
+/* ---------- design rules ---------- */
+const FONTS={
+ bold:['Archivo Black','Inter'],elegant:['Playfair Display','Lato'],playful:['Fredoka','Nunito'],
+ minimal:['DM Sans','DM Sans'],techy:['Space Grotesk','IBM Plex Mono'],warm:['Fraunces','Work Sans']};
+const FONTS3={
+ bold:[['Archivo Black','Inter'],['Space Grotesk','DM Sans'],['Fraunces','Work Sans']],
+ elegant:[['Playfair Display','Lato'],['Fraunces','Work Sans'],['DM Sans','Lato']],
+ playful:[['Fredoka','Nunito'],['Space Grotesk','Nunito'],['Archivo Black','Nunito']],
+ minimal:[['DM Sans','DM Sans'],['Space Grotesk','Inter'],['Playfair Display','DM Sans']],
+ techy:[['Space Grotesk','IBM Plex Mono'],['Archivo Black','IBM Plex Mono'],['DM Sans','IBM Plex Mono']],
+ warm:[['Fraunces','Work Sans'],['Playfair Display','Nunito'],['Fredoka','Work Sans']]};
+const ALLP=['dots','stripes','diamonds','grid','circuit','waves'];
+const RADIUS={bold:'4px',elegant:'0px',playful:'28px',minimal:'10px',techy:'2px',warm:'18px'};
+const PATTERN={bold:'stripes',elegant:'diamonds',playful:'dots',minimal:'grid',techy:'circuit',warm:'waves'};
+const WORDS={bold:['Strong','Confident','Loud'],elegant:['Refined','Timeless','Quiet luxury'],playful:['Joyful','Friendly','Fresh'],
+ minimal:['Clean','Precise','Calm'],techy:['Future-ready','Sharp','Digital'],warm:['Human','Welcoming','Trusted']};
+const TAGS={
+ tech:['Built for what’s next.','Smarter by design.','Technology, simplified.'],
+ real:['Spaces that shape futures.','Build where it matters.','Your next address.'],
+ food:['Made fresh. Made with care.','Taste the difference.','Every bite, a story.'],
+ health:['Care that comes to you.','Your health, our priority.','Wellness, together.'],
+ fashion:['Wear your story.','Style, redefined.','Effortless presence.'],
+ finance:['Grow with confidence.','Clarity in every number.','Wealth, well planned.'],
+ edu:['Learn without limits.','Where curiosity grows.','Skills that last.']};
+const MONO_BY_COLOR={vibrant:[50,85],warm:[52,70],cool:[42,65],earthy:[38,35],pastel:[80,70],mono:[28,6]};
+
+function makePalette(color,r,v=0){
+ const bases={vibrant:r()*360,warm:r()*40+5,cool:r()*40+190,earthy:r()*30+20,pastel:r()*360,mono:r()*360};
+ const h=bases[color]+(['vibrant','pastel','mono'].includes(color)?v*120:0),[l,s]=MONO_BY_COLOR[color];
+ const second=color==='mono'?h:h+(r()>.5?30:-30);
+ const acc=color==='mono'?h:h+(color==='earthy'?60:r()>.5?180:150);
+ const pal=[
+  {n:'Primary',c:hsl(h,s,l)},
+  {n:'Secondary',c:hsl(second,color==='mono'?6:s*.8,color==='pastel'?88:l+(l>50?-18:22))},
+  {n:'Accent',c:hsl(acc,color==='mono'?8:Math.min(95,s+10),color==='pastel'?72:55)},
+  {n:'Light',c:hsl(h,color==='mono'?4:22,95)},
+  {n:'Dark',c:hsl(h,color==='mono'?8:30,11)}];
+ return pal;
+}
+
+function patternSVG(kind,a,b,bg,r){
+ const id='p'+Math.floor(r()*1e6);let p='';
+ if(kind==='dots')p=`<pattern id="${id}" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="14" cy="14" r="5" fill="${a}"/><circle cx="0" cy="0" r="4" fill="${b}"/><circle cx="28" cy="28" r="4" fill="${b}"/></pattern>`;
+ if(kind==='stripes')p=`<pattern id="${id}" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="14" height="30" fill="${a}"/><rect x="14" width="4" height="30" fill="${b}"/></pattern>`;
+ if(kind==='diamonds')p=`<pattern id="${id}" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M20 3 37 20 20 37 3 20Z" fill="none" stroke="${a}" stroke-width="1.5"/><path d="M20 14 26 20 20 26 14 20Z" fill="${b}"/></pattern>`;
+ if(kind==='grid')p=`<pattern id="${id}" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="${a}" stroke-width="1.2"/><rect x="-2" y="-2" width="4" height="4" fill="${b}"/></pattern>`;
+ if(kind==='circuit')p=`<pattern id="${id}" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M0 30H20L30 20H60M30 20V0M30 60V40L40 30" fill="none" stroke="${a}" stroke-width="1.5"/><circle cx="20" cy="30" r="3" fill="${b}"/><circle cx="40" cy="30" r="3" fill="${b}"/></pattern>`;
+ if(kind==='waves')p=`<pattern id="${id}" width="60" height="24" patternUnits="userSpaceOnUse"><path d="M0 12Q15 0 30 12T60 12" fill="none" stroke="${a}" stroke-width="3"/><path d="M0 22Q15 10 30 22T60 22" fill="none" stroke="${b}" stroke-width="2"/></pattern>`;
+ return `<svg preserveAspectRatio="none"><defs>${p}</defs><rect width="100%" height="100%" fill="${bg}"/><rect width="100%" height="100%" fill="url(#${id})"/></svg>`;
+}
+
+function shapesSVG(style,pal,r){
+ const [P,S,A,L,D]=pal.map(x=>x.c);const rad={bold:0,elegant:0,playful:50,minimal:12,techy:0,warm:30}[style];
+ const cols=[P,S,A,L,D];let out='';
+ for(let i=0;i<7;i++){
+  const x=r()*80+2,y=r()*70+2,w=r()*30+14,h=r()*40+14,c=cols[Math.floor(r()*5)];
+  const t=r();
+  if(style==='playful'||style==='warm'&&t>.4)out+=`<circle cx="${x+w/2}%" cy="${y+h/2}%" r="${w/2.4}%" fill="${c}" opacity=".95"/>`;
+  else if(style==='elegant'||style==='techy'&&t>.5)out+=`<rect x="${x}%" y="${y}%" width="${w}%" height="${h}%" fill="none" stroke="${c}" stroke-width="2"/>`;
+  else out+=`<rect x="${x}%" y="${y}%" width="${w}%" height="${h}%" rx="${rad}%" fill="${c}"/>`;
+ }
+ return `<svg preserveAspectRatio="none"><rect width="100%" height="100%" fill="${L}"/>${out}</svg>`;
+}
+
+function markSVG(letter,style,P,fg,font){
+ const shape={bold:'<rect x="10" y="10" width="180" height="180"/>',elegant:'<circle cx="100" cy="100" r="88" fill="none" stroke="'+fg+'" stroke-width="3"/>',
+ playful:'<circle cx="100" cy="100" r="90"/>',minimal:'<rect x="10" y="10" width="180" height="180" rx="40"/>',
+ techy:'<polygon points="100,6 188,56 188,144 100,194 12,144 12,56"/>',warm:'<path d="M100 8C160 8 192 50 192 100S160 192 100 192 8 150 8 100 40 8 100 8Z"/>'}[style];
+ const filled=style!=='elegant';
+ return `<svg viewBox="0 0 200 200" style="width:70%;max-height:100%"><g fill="${filled?fg:'none'}">${shape}</g>
+ <text x="100" y="${style==='elegant'?132:138}" text-anchor="middle" font-size="110" font-family="'${font}','Cairo',sans-serif" fill="${filled?P:fg}" font-weight="700">${letter}</text></svg>`;
+}
+
+const shade=(hex,f)=>'#'+[1,3,5].map(i=>Math.max(0,Math.min(255,Math.round(parseInt(hex.substr(i,2),16)*f))).toString(16).padStart(2,'0')).join('');
+const GRAIN=`<div style="position:absolute;inset:0;opacity:.16;mix-blend-mode:multiply;pointer-events:none;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>&quot;)"></div>`;
+/* ---------- render ---------- */
+let state={shuffle:0};
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+function buildVariant(v){
+ let boardHTML,mocksHTML;
+ const brand=$('brand').value.trim(),ind=$('industry').value,style=$('style').value,color=$('color').value;
+ const desc=$('desc').value.trim().replace(/\s+/g,' ');
+ const STOP=new Set('the and for with that this from your you our are was were has have into who what when where while about their them they will can its any all more most such than then also very just like make made help helps using use serve serves based company brand business service services products product'.split(' '));
+ const kws=[...new Set((desc.match(/[\p{L}]+/gu)||[]).filter(w=>[...w].length>=(/[a-z]/i.test(w)?4:3)&&!STOP.has(w.toLowerCase())).map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()))].slice(0,3);
+ const chips=[...kws,...WORDS[style]].slice(0,3);
+ const ddir=/[\u0600-\u06FF]/.test(desc)?'rtl':'ltr';
+ const clip=(t,n)=>t.length>n?t.slice(0,n-1).replace(/\s+\S*$/,'')+'…':t;
+ const about=desc?esc(clip(desc,110)):null;
+ if(!brand)return;
+ const r=rng(hash([brand,ind,style,color,state.shuffle,v].join('|')));
+ const pal=makePalette(color,r,v);const [P,S,A,L,D]=pal.map(x=>x.c);
+ const rtl=/[؀-ۿ]/.test(brand);
+ const [hf,bf]=FONTS3[style][v];const head=rtl?`'Cairo','${hf}'`:`'${hf}'`;const body=rtl?`'Cairo','${bf}'`:`'${bf}'`;
+ const rad=RADIUS[style];const tag=TAGS[ind][Math.floor(r()*3)];
+ const letter=[...brand][0].toUpperCase();
+ const bgWord=r()>.5?P:D;const pat=ALLP[(ALLP.indexOf(PATTERN[style])+v*2)%6];
+ const dir=rtl?'rtl':'ltr';
+
+ boardHTML=`
+ <div class="tile t-word" style="background:${bgWord};color:${on(bgWord)};--r:${rad==='0px'?'4px':'18px'}">
+   <span class="cap">Wordmark</span>
+   <div class="word" dir="${dir}" style="font-family:${head};font-weight:${style==='minimal'?500:700};letter-spacing:${style==='bold'?'-.03em':style==='elegant'?'.04em':'0'}">${esc(brand)}</div>
+   <span class="cap">${esc(tag)}</span>
+ </div>
+ <div class="tile t-pal">${pal.map(x=>`<div class="sw" style="background:${x.c};color:${on(x.c)}"><small>${x.n}</small>${x.c.toUpperCase()}</div>`).join('')}</div>
+ <div class="tile t-mark" style="background:${S};--r:${rad==='0px'?'4px':'18px'}">${markSVG(esc(letter),style,S,P,hf)}</div>
+ <div class="tile t-pat">${patternSVG(pat,P,A,L,r)}</div>
+ <div class="tile t-type" style="background:${L};color:${D}">
+   <span class="cap">Typography</span>
+   <div class="aa" style="font-family:${head};color:${P}">Aa</div>
+   <div><div style="font-family:${head};font-size:18px;font-weight:700">${hf}</div>
+   <div style="font-family:${body};font-size:14px;opacity:.75;margin-top:4px">${bf} · ${about?`<span dir="${ddir}" style="display:block">${about}</span>`:'The quick brown fox jumps over the lazy dog.'}</div></div>
+ </div>
+ <div class="tile t-shape">${shapesSVG(style,pal,r)}</div>
+ <div class="tile t-ui" style="background:${L};color:${D};font-family:${body}">
+   <span class="cap">Interface feel</span>
+   <div style="display:flex;flex-direction:column;gap:10px">
+     <button class="uib" style="background:${P};color:${on(P)};border-radius:${rad};font-family:${body}">Get started</button>
+     <div class="uic" style="background:#fff;border:1px solid ${S};border-radius:${rad};box-shadow:${style==='minimal'||style==='elegant'?'none':'0 8px 20px -10px '+P}">
+       <b style="font-family:${head};font-size:15px">${esc(brand)}</b><br><span style="opacity:.7">Card, button and input radius follow the ${style} direction.</span></div>
+   </div>
+ </div>
+ <div class="tile t-tag" style="background:${A};color:${on(A)}">
+   <span class="cap">Personality</span>
+   <div>${chips.map(w=>`<span class="chip" style="background:${on(A)};color:${A}">${w}</span>`).join('')}</div>
+   <div style="font-family:${head};font-size:20px;font-weight:700;line-height:1.2">${esc(tag)}</div>
+ </div>`;
+
+ /* ---------- mockups ---------- */
+ const B=esc(brand),mr=`min(${rad},16px)`,round=(style==='playful'||style==='warm');
+ const handle='@'+esc(brand.toLowerCase().replace(/\s+/g,''));
+ const wfs=Math.max(11,Math.min(26,230/[...brand].length));
+ const dots='<i style="width:9px;height:9px;border-radius:50%;background:#ccc;display:block"></i>'.repeat(3);
+ const glare=`<div style="position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.30) 0,rgba(255,255,255,.07) 34%,transparent 35%);pointer-events:none"></div>`;
+ const bagC=L,bagDk=shade(L,.86),surf=shade(S,1.0);
+ const heroInner=`<div><div style="font-family:${head};font-size:34px;line-height:1.1;font-weight:700;max-width:300px">${esc(tag)}</div>
+   <div style="margin:12px 0 16px;font-size:12px;opacity:.8;max-width:280px">${about?`<span dir="${ddir}" style="display:block">${about}</span>`:`${B} brings your ideas to life with a clear, confident identity.`}</div>
+   <span style="display:inline-block;padding:9px 18px;background:${A};color:${on(A)};border-radius:${rad};font-weight:600;font-size:12px">Get started</span></div>
+   <div style="width:30%;aspect-ratio:1;flex:none;background:${A};border-radius:${round?'50%':rad};position:relative;box-shadow:0 18px 30px -14px rgba(0,0,0,.5)"><div style="position:absolute;inset:22%;background:${S};border-radius:${round?'50%':rad}"></div></div>`;
+ const site=`<div style="height:100%;display:flex;flex-direction:column;font-family:${body};background:#fff">
+   <div dir="${dir}" style="display:flex;justify-content:space-between;align-items:center;padding:12px 26px;color:${D}"><b style="font-family:${head};font-size:17px">${B}</b><span style="font-size:11px;display:flex;gap:16px;align-items:center"><span style="opacity:.7">Home</span><span style="opacity:.7">Services</span><span style="opacity:.7">About</span><span style="background:${P};color:${on(P)};padding:5px 12px;border-radius:${mr}">Contact</span></span></div>
+   <div dir="${dir}" style="flex:1;background:${P};color:${on(P)};display:flex;align-items:center;justify-content:space-between;padding:0 34px;gap:20px;overflow:hidden">${heroInner}</div>
+   <div style="display:flex;gap:14px;padding:14px 26px;background:#fff"><i style="flex:1;height:44px;background:${L};border-radius:${mr}"></i><i style="flex:1;height:44px;background:${L};border-radius:${mr}"></i><i style="flex:1;height:44px;background:${L};border-radius:${mr}"></i></div></div>`;
+ const phoneHTML=(inner,tr,z)=>`<div style="position:absolute;width:172px;height:352px;border-radius:36px;background:linear-gradient(145deg,#8c8e94,#1b1c1f 38%,#9a9ca2);padding:3px;transform:${tr};z-index:${z};box-shadow:0 44px 46px -22px rgba(0,0,0,.65),-10px 10px 0 -5px rgba(0,0,0,.22)">
+   <div style="width:100%;height:100%;border-radius:33px;background:#000;padding:6px;position:relative"><div style="width:100%;height:100%;border-radius:27px;overflow:hidden;position:relative;background:${L}">${inner}
+   <i style="position:absolute;top:8px;left:50%;margin-left:-26px;width:52px;height:15px;border-radius:9px;background:#000"></i>${glare}</div></div>
+   <i style="position:absolute;right:-3px;top:80px;width:3px;height:44px;border-radius:0 2px 2px 0;background:#555"></i><i style="position:absolute;left:-3px;top:70px;width:3px;height:26px;border-radius:2px 0 0 2px;background:#555"></i></div>`;
+ const scrA=`<div style="padding:34px 12px 0;font-family:${body};color:${D};height:100%;display:flex;flex-direction:column">
+   <div dir="${dir}" style="font:700 15px ${head};display:flex;justify-content:space-between;padding:0 2px 8px"><span>${B}</span><span>☰</span></div>
+   <div style="background:${P};color:${on(P)};border-radius:${mr};padding:14px"><div style="font-size:10px;opacity:.75">Welcome back</div><div style="font:700 15px/1.15 ${head};margin:4px 0 10px">${esc(tag)}</div><span style="display:inline-block;background:${A};color:${on(A)};padding:5px 11px;border-radius:${mr};font-size:10px;font-weight:600">Explore</span></div>
+   ${['Your plan','New for you'].map(t=>`<div style="margin-top:7px;background:#fff;border:1px solid ${S};border-radius:${mr};padding:9px;display:flex;gap:9px;align-items:center"><i style="width:28px;height:28px;background:${S};border-radius:${round?'50%':'6px'};flex:none"></i><div style="font-size:11px"><b>${t}</b><br><span style="opacity:.6;font-size:9px">Tap to view details</span></div></div>`).join('')}
+   <div style="flex:1"></div><div style="display:flex;justify-content:space-around;padding:12px 0;border-top:1px solid ${S};margin:0 -12px;background:#fff">${[P,S,S,S].map(c=>`<i style="width:16px;height:16px;border-radius:${round?'50%':'5px'};background:${c};display:block"></i>`).join('')}</div></div>`;
+ const scrB=`<div style="height:100%;background:${P};color:${on(P)};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px"><div style="width:74px;height:74px">${markSVG(esc(letter),style,P,L,hf)}</div><div dir="${dir}" style="font:700 22px ${head}">${B}</div><div style="font:500 10px ${body};opacity:.8">${esc(tag)}</div><span style="margin-top:10px;background:${A};color:${on(A)};padding:9px 26px;border-radius:${mr};font:600 11px ${body}">Get started</span></div>`;
+ const heart=`<svg style="width:20px;height:20px;flex:none" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${D}" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-7-4.6-9.3-9A5.2 5.2 0 0 1 12 6a5.2 5.2 0 0 1 9.3 6c-2.3 4.4-9.3 9-9.3 9z"/></svg>`;
+ const bubble=`<svg style="width:20px;height:20px;flex:none" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${D}" stroke-width="2" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/></svg>`;
+ const send=`<svg style="width:20px;height:20px;flex:none" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${D}" stroke-width="2" stroke-linejoin="round"><path d="M22 3 2 11l7 3 3 7zM22 3 9 14"/></svg>`;
+ const brick=`repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 2px,transparent 2px 16px),repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 2px,transparent 2px 38px)`;
+ const wall=shade(D,1.9);
+
+ mocksHTML=`
+ <div class="tile m-web" style="background:radial-gradient(120% 100% at 50% 0,${L} 0,${S} 100%);padding:0;align-items:center;justify-content:center">${GRAIN}
+  <div style="position:relative;width:88%;max-width:640px">
+   <div style="background:linear-gradient(#2c2d31,#0f0f11);border-radius:16px 16px 4px 4px;padding:12px 12px 14px;box-shadow:inset 0 0 0 1.5px #5a5b60,0 40px 46px -26px rgba(0,0,0,.6)">
+    <div style="position:relative;aspect-ratio:16/10;background:#fff;border-radius:3px;overflow:hidden">${site}${glare}</div>
+   </div>
+   <div style="position:relative;height:15px;margin:0 -4%;background:linear-gradient(#e3e4e7,#a4a6ab);border-radius:0 0 20px 20px;box-shadow:0 22px 26px -8px rgba(0,0,0,.5)"><i style="position:absolute;left:50%;top:0;margin-left:-45px;width:90px;height:6px;border-radius:0 0 8px 8px;background:#8b8d92"></i></div>
+  </div>
+ </div>
+ <div class="tile m-phone" style="background:linear-gradient(160deg,${A},${P});padding:0;align-items:center;justify-content:center">${GRAIN}
+  <div style="position:relative;width:100%;height:100%;perspective:1200px">
+   <div style="position:absolute;left:50%;top:50%;width:0;height:0">
+    ${phoneHTML(scrB,'translate(-150px,-168px) rotateY(18deg) rotateX(4deg) rotateZ(-5deg)',1)}
+    ${phoneHTML(scrA,'translate(-10px,-190px) rotateY(-16deg) rotateX(4deg) rotateZ(5deg)',2)}
+   </div>
+  </div>
+ </div>
+ <div class="tile m-card" style="background:linear-gradient(135deg,#e2ddd3,#bfb8aa);padding:0;align-items:center;justify-content:center">${GRAIN}
+  <div style="position:relative;width:340px;height:260px;perspective:900px">
+   <div style="position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(46deg) rotateZ(-26deg)">
+    <div style="position:absolute;left:30px;top:70px;width:230px;height:134px;background:${P};border-radius:${mr};box-shadow:0 1px 0 ${shade(P,.8)},0 2px 0 ${shade(P,.74)},0 3px 0 ${shade(P,.7)},22px 30px 26px -6px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;gap:12px">
+     <div style="width:44px;height:44px">${markSVG(esc(letter),style,P,L,hf)}</div>
+     <span dir="${dir}" style="font:700 ${Math.max(13,Math.min(21,125/[...brand].length*1.6))}px ${head};color:${on(P)}">${B}</span></div>
+    <div style="position:absolute;left:96px;top:-10px;width:230px;height:134px;background:#f7f4ee;border-radius:${mr};box-shadow:0 1px 0 #e6e1d6,0 2px 0 #d8d2c5,0 3px 0 #cdc6b8,22px 30px 26px -6px rgba(0,0,0,.45);padding:18px;font-family:${body};color:${D};display:flex;flex-direction:column;justify-content:space-between;overflow:hidden">
+     <div><b style="font:700 14px ${head};text-shadow:0 1px 0 #fff,0 -1px 0 rgba(0,0,0,.2)">Your Name</b><div style="font-size:10px;opacity:.65">Creative Director</div></div>
+     <div style="font-size:9.5px;line-height:1.6;opacity:.8">+966 5X XXX XXXX<br>hello@${esc(brand.toLowerCase().replace(/[^a-z0-9]/g,'')||'brand')}.com<br>Saudi Arabia</div>
+     <i style="position:absolute;right:0;top:0;bottom:0;width:9px;background:${A}"></i></div>
+   </div>
+  </div>
+ </div>
+ <div class="tile m-social" style="background:linear-gradient(150deg,${S},${A});padding:0;align-items:center;justify-content:center">${GRAIN}
+  <div style="position:relative;width:78%;max-width:270px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 30px 40px -18px rgba(0,0,0,.55);font-family:'Inter',sans-serif;color:${D}">
+   <div style="display:flex;align-items:center;gap:8px;padding:10px 12px"><div style="width:28px;height:28px;border-radius:50%;background:${P};padding:3px">${markSVG(esc(letter),style,P,L,hf)}</div><b style="font-size:12px">${handle}</b><span style="margin-left:auto;letter-spacing:2px">···</span></div>
+   <div dir="${dir}" style="position:relative;aspect-ratio:1;background:${P};color:${on(P)};overflow:hidden"><div style="position:absolute;inset:0;opacity:.25">${patternSVG(pat,L,A,P,r)}</div>
+    <div style="position:relative;height:100%;padding:18px;display:flex;flex-direction:column;justify-content:space-between"><div style="width:30px;height:30px">${markSVG(esc(letter),style,P,L,hf)}</div><div style="font:700 25px/1.08 ${head}">${esc(tag)}</div><span style="width:fit-content;background:${A};color:${on(A)};padding:5px 11px;border-radius:${mr};font:600 11px ${body}">Learn more</span></div></div>
+   <div style="display:flex;gap:12px;padding:10px 12px 4px">${heart}${bubble}${send}</div>
+   <div style="padding:0 12px 12px;font-size:11px;line-height:1.4"><b>2,481 likes</b><br><b>${handle}</b> ${about?`<span dir="${ddir}">${esc(clip(desc,70))}</span>`:esc(tag)} <span style="opacity:.5">#${esc(brand.toLowerCase().replace(/\s+/g,''))}</span></div>
+  </div>
+ </div>
+ <div class="tile m-tote" style="background:radial-gradient(100% 90% at 50% 20%,${L},${S});padding:0;align-items:center;justify-content:center">${GRAIN}
+  <svg viewBox="0 0 240 300" style="display:block;width:auto;height:96%;max-height:360px;overflow:visible">
+   <defs>
+    <linearGradient id="fab" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".22" stop-color="#000" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".22"/><stop offset=".78" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>
+    <linearGradient id="fabv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".12"/><stop offset=".15" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient>
+    <filter id="weave" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" result="n"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 0"/></filter>
+    <filter id="blur2"><feGaussianBlur stdDeviation="2.4"/></filter><filter id="blur8"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="1.6"/></filter>
+    <clipPath id="bagclip"><path d="M44 98H196L208 268Q120 284 32 268Z"/></clipPath>
+   </defs>
+   <ellipse cx="120" cy="284" rx="96" ry="10" fill="#000" opacity=".35" filter="url(#blur8)"/>
+   <path d="M82 104C78 18 162 18 158 104" fill="none" stroke="${bagDk}" stroke-width="13" stroke-linecap="round"/>
+   <path d="M82 104C78 18 162 18 158 104" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 5" transform="translate(0 -1)"/>
+   <path d="M44 98H196L208 268Q120 284 32 268Z" fill="${bagC}"/>
+   <g clip-path="url(#bagclip)">
+    <rect x="20" y="90" width="200" height="200" filter="url(#weave)" opacity=".16"/>
+    <rect x="20" y="90" width="200" height="200" fill="url(#fab)"/><rect x="20" y="90" width="200" height="200" fill="url(#fabv)"/>
+    <path d="M70 130C84 170 66 210 74 262" stroke="#000" stroke-opacity=".10" stroke-width="9" fill="none" filter="url(#blur2)"/>
+    <path d="M170 120C160 170 182 212 168 266" stroke="#000" stroke-opacity=".09" stroke-width="9" fill="none" filter="url(#blur2)"/>
+    <path d="M118 150C124 190 112 230 120 270" stroke="#fff" stroke-opacity=".22" stroke-width="10" fill="none" filter="url(#blur2)"/>
+    <path d="M40 270Q120 288 214 268" stroke="#000" stroke-opacity=".22" stroke-width="5" fill="none" filter="url(#blur2)"/>
+   </g>
+   <path d="M46 112H194" stroke="#000" stroke-opacity=".28" stroke-dasharray="3 3" stroke-width="1"/>
+   <g filter="url(#ink)" opacity=".94">
+    <g transform="translate(96 128) scale(.24)">${markSVG(esc(letter),style,L,P,hf).replace(/<svg[^>]*>/,'<g>').replace('</svg>','</g>')}</g>
+    <text x="120" y="206" text-anchor="middle" font-size="${wfs}" font-weight="700" font-family="${head}" fill="${P}">${B}</text>
+    <text x="120" y="226" text-anchor="middle" font-size="8.5" font-family="${body}" fill="${D}" opacity=".75">${esc(tag)}</text>
+   </g>
+  </svg>
+ </div>
+ <div class="tile m-sign" style="background:linear-gradient(#20222a,#0c0d10);padding:0;align-items:center;justify-content:center">
+  <div style="position:relative;width:100%;max-width:680px;height:100%;background:${wall};background-image:${brick};overflow:hidden;box-shadow:0 0 60px -10px rgba(0,0,0,.8)">${GRAIN}
+   <div dir="${dir}" style="position:absolute;left:34px;right:34px;top:20px;height:86px;background:linear-gradient(${shade(P,1.12)},${shade(P,.82)});border-radius:${mr};display:flex;align-items:center;justify-content:center;font:700 ${Math.max(22,Math.min(44,400/[...brand].length*1.1))}px ${head};color:${on(P)};text-shadow:0 2px 0 rgba(0,0,0,.25);box-shadow:0 10px 18px -8px rgba(0,0,0,.7),inset 0 0 0 3px ${shade(P,.7)}">${B}</div>
+   <div style="position:absolute;left:34px;right:34px;top:108px;height:70px;background:radial-gradient(ellipse at 50% 0,rgba(255,255,230,.55),transparent 70%)"></div>
+   <div style="position:absolute;left:24px;right:24px;top:116px;height:50px;background:repeating-linear-gradient(90deg,${A} 0 34px,${L} 34px 68px);border-radius:2px 2px 26px 26px;box-shadow:0 16px 18px -8px rgba(0,0,0,.65)"></div>
+   <div style="position:absolute;left:34px;top:184px;width:60%;bottom:30px;background:linear-gradient(135deg,#1d2a33,#0a0f14 55%,#26343f);border:5px solid ${shade(D,.6)};border-radius:3px;overflow:hidden">
+    <div style="position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.16) 0,rgba(255,255,255,.04) 30%,transparent 31%,transparent 60%,rgba(255,255,255,.08) 61%,transparent 70%)"></div>
+    <div style="position:absolute;left:0;right:0;bottom:30%;height:5px;background:#000;opacity:.5"></div>
+    <div style="position:absolute;left:14px;bottom:calc(30% + 5px);display:flex;gap:10px;align-items:flex-end"><i style="width:24px;height:44px;background:${P};border-radius:3px"></i><i style="width:30px;height:30px;background:${A};border-radius:${round?'50%':'3px'}"></i><i style="width:20px;height:54px;background:${S};border-radius:3px"></i></div>
+    <div style="position:absolute;right:18px;top:16px;padding:5px 14px;border:2px solid ${A};border-radius:${mr};font:700 14px ${body};letter-spacing:.2em;color:${A};text-shadow:0 0 6px ${A},0 0 16px ${A};box-shadow:0 0 8px ${A},inset 0 0 8px ${A}">OPEN</div></div>
+   <div style="position:absolute;right:34px;top:184px;width:calc(40% - 80px);bottom:30px;background:linear-gradient(135deg,${shade(P,.9)},${shade(P,.6)});border:5px solid ${shade(D,.6)};border-radius:3px;overflow:hidden"><i style="position:absolute;right:12px;top:50%;width:8px;height:40px;margin-top:-20px;border-radius:4px;background:linear-gradient(#f2f2f2,#8d8d8d)"></i>
+    <div style="position:absolute;left:12px;top:14px;right:12px;bottom:34%;background:linear-gradient(135deg,#1d2a33,#0a0f14);border-radius:2px;overflow:hidden"><div style="position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.18) 0,transparent 40%)"></div></div></div>
+   <div style="position:absolute;left:0;right:0;bottom:0;height:30px;background:linear-gradient(#55565c,#2c2d31)"></div>
+  </div>
+ </div>`;
+ return {boardHTML,mocksHTML,pal,hf,bf};
+}
+
+function generate(){
+ const brand=$('brand').value.trim();if(!brand)return;
+ let html='';
+ for(let v=0;v<3;v++){
+  const o=buildVariant(v);
+  html+=`<section class="variant"><div class="vhead"><span><b>Option ${'ABC'[v]}</b><small>${o.hf} + ${o.bf}</small></span><span>${o.pal.map(x=>`<i class="sw2" title="${x.n} ${x.c.toUpperCase()}" style="background:${x.c}"></i>`).join('')}</span></div><div class="board">${o.boardHTML}</div><h2 class="mockh">Brand mockups</h2><div class="board mocks">${o.mocksHTML}</div></section>`;
+ }
+ $('capture').innerHTML=html;
+ $('meta').textContent=`${brand} · ${$('industry').selectedOptions[0].text} · ${$('style').selectedOptions[0].text} · ${$('color').selectedOptions[0].text} · 3 options`;
+ $('empty').style.display='none';$('actions').style.display='flex';
+}
+
+function run(){
+ if(!$('brand').value.trim()){$('brand').focus();return}
+ state.shuffle=0;
+ try{generate()}catch(err){console.error(err);alert('Could not generate: '+err.message);return}
+ try{$('capture').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}
+}
+$('go').addEventListener('click',run);
+$('f').addEventListener('submit',e=>{e.preventDefault();run()});
+$('brand').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();run()}});
+$('shuffle').onclick=()=>{state.shuffle++;generate()};
+/* ---------- lead form + download ---------- */
+/* Set this to your form endpoint (WordPress admin-ajax URL, Formspree, Zapier, Make, etc.).
+   Leave empty to only keep leads in this browser (localStorage). */
+const LEAD_ENDPOINT='';
+
+function openLead(){
+ ['lName','lEmail','lPhone'].forEach(i=>$(i).classList.remove('bad'));['eName','eEmail','ePhone'].forEach(i=>$(i).textContent='');
+ $('leadForm').style.display='block';$('leadDone').style.display='none';$('lead').querySelector('.mbox').classList.remove('wide');$('leadErr').textContent='';$('lead').classList.add('open');setTimeout(()=>$('lName').focus(),50);
+}
+function closeLead(){$('lead').classList.remove('open')}
+$('save').onclick=openLead;
+$('leadX').onclick=closeLead;
+$('lead').addEventListener('click',e=>{if(e.target===$('lead'))closeLead()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLead()});
+
+function loadScript(src){return new Promise((res,rej)=>{const t=document.createElement('script');t.src=src;t.onload=res;t.onerror=()=>rej(new Error('load '+src));document.head.appendChild(t)})}
+async function ensureH2C(){
+ if(window.html2canvas)return;
+ const urls=['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js','https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js'];
+ for(const u of urls){try{await loadScript(u);if(window.html2canvas)return}catch(_){}}
+ throw new Error('The export library could not be loaded. Check your internet connection and try again.');
+}
+function saveBlob(blob,name){
+ const url=URL.createObjectURL(blob);const a=document.createElement('a');a.download=name;a.href=url;a.style.display='none';document.body.appendChild(a);a.click();
+ setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},4000);
+}
+async function buildImages(){
+ await ensureH2C();
+ const secs=[...document.querySelectorAll('#capture .variant')];
+ const total=secs.reduce((a,x)=>a+x.offsetHeight,0)||1;
+ const scale=Math.max(.5,Math.min(1.5,12000/total));
+ const canv=[];
+ for(const x of secs)canv.push(await html2canvas(x,{backgroundColor:'#f6f5f2',scale,useCORS:true,logging:false}));
+ const toBlob=c=>new Promise(r=>c.toBlob(r,'image/png'));
+ const blobs=[];for(const c of canv){const bl=await toBlob(c);if(!bl)throw new Error('The image is too large for this browser.');blobs.push(bl)}
+ const W=Math.max(...canv.map(c=>c.width)),H=canv.reduce((a,c)=>a+c.height,0);
+ const big=document.createElement('canvas');big.width=W;big.height=H;const g=big.getContext('2d');
+ g.fillStyle='#f6f5f2';g.fillRect(0,0,W,H);let y=0;canv.forEach(c=>{g.drawImage(c,0,y);y+=c.height});
+ const all=await toBlob(big);
+ return {blobs,all};
+}
+let dlUrls=[];
+function showDone(res,base){
+ dlUrls.forEach(u=>URL.revokeObjectURL(u));dlUrls=[];
+ const mk=bl=>{const u=URL.createObjectURL(bl);dlUrls.push(u);return u};
+ const L='ABC';
+ $('dlGrid').innerHTML=res.blobs.map((bl,i)=>{const u=mk(bl);return `<figure><img src="${u}" alt="Option ${L[i]}"><figcaption>Option ${L[i]}</figcaption><a class="btn" href="${u}" download="${base}-option-${L[i]}.png">Download</a><a class="btn ghost" href="${u}" target="_blank" rel="noopener">Open</a></figure>`}).join('');
+ if(res.all){const u=mk(res.all);const a=$('dlAll');a.href=u;a.download=base+'-stylescape.png';a.style.display='block'}else $('dlAll').style.display='none';
+ $('leadForm').style.display='none';$('leadDone').style.display='block';$('lead').querySelector('.mbox').classList.add('wide');
+ if(res.all)saveBlob(res.all,base+'-stylescape.png');
+}
+function bad(id,eid,msg){$(id).classList.add('bad');$(eid).textContent=msg;return false}
+
+$('leadF').addEventListener('submit',async e=>{
+ e.preventDefault();
+ ['lName','lEmail','lPhone'].forEach(i=>$(i).classList.remove('bad'));['eName','eEmail','ePhone'].forEach(i=>$(i).textContent='');
+ const name=$('lName').value.trim(),email=$('lEmail').value.trim(),phone=$('lPhone').value.trim();
+ let ok=true;
+ if(name.length<2)ok=bad('lName','eName','Please enter your name')&&ok;
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))ok=bad('lEmail','eEmail','Please enter a valid email')&&ok;
+ if(phone.replace(/\D/g,'').length<7)ok=bad('lPhone','ePhone','Please enter a valid phone number')&&ok;
+ if(!ok)return;
+ const lead={name,email,phone,brand:$('brand').value.trim(),description:$('desc').value.trim(),industry:$('industry').value,style:$('style').value,color:$('color').value,date:new Date().toISOString()};
+ const btn=$('leadGo');btn.disabled=true;btn.textContent='Preparing image…';
+ try{const all=JSON.parse(localStorage.getItem('stylescapeLeads')||'[]');all.push(lead);localStorage.setItem('stylescapeLeads',JSON.stringify(all))}catch(_){}
+ if(LEAD_ENDPOINT){try{await fetch(LEAD_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(lead)})}catch(err){console.warn('Lead not sent',err)}}
+ $('leadErr').textContent='';
+ try{const res=await buildImages();showDone(res,($('brand').value.trim()||'brand').replace(/[^\p{L}\p{N}_-]+/gu,'-'))}catch(err){console.error(err);$('leadErr').textContent='Could not create the image: '+err.message}
+ btn.disabled=false;btn.textContent='Download PNG';
+});
+</script>
+</body>
+</html>
