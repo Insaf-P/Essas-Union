@@ -466,9 +466,7 @@ function openLead(){
 }
 function closeLead(){$('lead').classList.remove('open')}
 $('save').onclick=openLead;
-$('leadX').onclick=closeLead;
-$('lead').addEventListener('click',e=>{if(e.target===$('lead'))closeLead()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLead()});
+$('leadX').onclick=closeLead; /* the popup closes only with the × button */
 
 function loadScript(src){return new Promise((res,rej)=>{const t=document.createElement('script');t.src=src;t.onload=res;t.onerror=()=>rej(new Error('load '+src));document.head.appendChild(t)})}
 async function ensureH2C(){
