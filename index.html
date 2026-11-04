@@ -21,7 +21,7 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:1px}
 button{font:inherit;font-weight:600;cursor:pointer;border:0;border-radius:10px;padding:13px 22px;background:var(--ink);color:#fff}
 button:hover{opacity:.88}
 button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
-.actions{display:none;gap:10px;margin:22px 0 14px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.actions{display:none;gap:10px;margin:14px 0 14px;padding:10px 0;justify-content:space-between;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
 .actions .l{color:var(--mute);font-size:14px}
 .board{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:92px;gap:14px}
 .tile{border-radius:var(--r,18px);overflow:hidden;position:relative;padding:22px;display:flex;flex-direction:column;justify-content:space-between;animation:pop .4s ease-out}
@@ -55,6 +55,9 @@ button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
 .m-tote{grid-column:9/13;grid-row:6/10;align-items:center;justify-content:center}
 .m-sign{grid-column:1/13;grid-row:10/14;padding:0;justify-content:flex-start}
 .empty{padding:60px 20px;text-align:center;color:var(--mute);border:2px dashed var(--line);border-radius:18px;margin-top:22px}
+.totop{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));width:46px;height:46px;border-radius:50%;padding:0;display:none;align-items:center;justify-content:center;background:var(--ink);color:#fff;box-shadow:0 10px 24px -8px rgba(0,0,0,.45);z-index:40}
+.totop.show{display:flex}
+.totop svg{width:20px;height:20px}
 .modal{position:fixed;inset:0;background:rgba(10,10,12,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;backdrop-filter:blur(3px)}
 .modal.open{display:flex}
 .mbox{background:#fff;border-radius:18px;padding:28px;width:100%;max-width:420px;box-shadow:0 30px 60px -20px rgba(0,0,0,.5);position:relative}
@@ -91,8 +94,7 @@ button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
     <label>Brand name<input id="brand" required maxlength="30" placeholder="e.g. Nova, نخلة, Oasis Labs"></label>
     <label>Industry
       <select id="industry">
-        <option value="tech">Technology</option><option value="real">Real estate</option><option value="food">Food &amp; café</option>
-        <option value="health">Healthcare</option><option value="fashion">Fashion &amp; beauty</option><option value="finance">Finance</option><option value="edu">Education</option>
+        <option value="agri">Agriculture &amp; farming</option><option value="art">Art &amp; design studio</option><option value="auto">Automotive</option><option value="const">Construction &amp; contracting</option><option value="consult">Consulting</option><option value="edu">Education &amp; training</option><option value="energy">Energy &amp; utilities</option><option value="ent">Entertainment &amp; gaming</option><option value="events">Events &amp; exhibitions</option><option value="fm">Facilities management</option><option value="fashion">Fashion &amp; beauty</option><option value="finance">Finance &amp; investment</option><option value="food">Food &amp; café</option><option value="gov">Government &amp; public sector</option><option value="health">Healthcare</option><option value="home">Home &amp; cleaning services</option><option value="hotel">Hospitality &amp; hotels</option><option value="insure">Insurance</option><option value="jewel">Jewelry &amp; luxury</option><option value="legal">Legal services</option><option value="logi">Logistics &amp; transport</option><option value="manu">Manufacturing &amp; industrial</option><option value="media">Marketing &amp; media</option><option value="ngo">Non-profit &amp; charity</option><option value="pet">Pet care</option><option value="pharma">Pharmaceuticals</option><option value="real">Real estate</option><option value="retail">Retail &amp; e-commerce</option><option value="security">Security services</option><option value="sport">Sports &amp; fitness</option><option value="tech" selected>Technology</option><option value="telecom">Telecommunications</option><option value="travel">Travel &amp; tourism</option>
       </select></label>
     <label>Style
       <select id="style">
@@ -115,6 +117,8 @@ button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
   <div class="empty" id="empty">Your stylescape will appear here.</div>
   <div id="capture"></div>
 </div>
+
+<button class="totop" id="toTop" type="button" aria-label="Back to top" title="Back to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 
 <div class="modal" id="lead" role="dialog" aria-modal="true" aria-labelledby="leadT">
   <div class="mbox">
@@ -169,13 +173,39 @@ const PATTERN={bold:'stripes',elegant:'diamonds',playful:'dots',minimal:'grid',t
 const WORDS={bold:['Strong','Confident','Loud'],elegant:['Refined','Timeless','Quiet luxury'],playful:['Joyful','Friendly','Fresh'],
  minimal:['Clean','Precise','Calm'],techy:['Future-ready','Sharp','Digital'],warm:['Human','Welcoming','Trusted']};
 const TAGS={
- tech:['Built for what’s next.','Smarter by design.','Technology, simplified.'],
- real:['Spaces that shape futures.','Build where it matters.','Your next address.'],
- food:['Made fresh. Made with care.','Taste the difference.','Every bite, a story.'],
- health:['Care that comes to you.','Your health, our priority.','Wellness, together.'],
+ agri:['Grown with care.','From soil to table.','Rooted in quality.'],
+ art:['Ideas, made visible.','Design with intent.','Where creativity works.'],
+ auto:['Drive the difference.','Built to move you.','Engineered for the road.'],
+ const:['Built to last.','Strong foundations, clear delivery.','We build on trust.'],
+ consult:['Clarity for bold decisions.','Strategy that delivers.','Advice you can act on.'],
+ edu:['Learn without limits.','Where curiosity grows.','Skills that last.'],
+ energy:['Power for tomorrow.','Energy, made reliable.','Cleaner. Smarter. Stronger.'],
+ ent:['Play without limits.','Made to be enjoyed.','Where stories come alive.'],
+ events:['Moments worth remembering.','Events, done right.','Bring people together.'],
+ fm:['Every space, well kept.','Reliable. Responsive. Right.','Spaces that work.'],
  fashion:['Wear your story.','Style, redefined.','Effortless presence.'],
  finance:['Grow with confidence.','Clarity in every number.','Wealth, well planned.'],
- edu:['Learn without limits.','Where curiosity grows.','Skills that last.']};
+ food:['Made fresh. Made with care.','Taste the difference.','Every bite, a story.'],
+ gov:['Serving every community.','Clear. Open. Accountable.','Public service, simplified.'],
+ health:['Care that comes to you.','Your health, our priority.','Wellness, together.'],
+ home:['A cleaner place to live.','Home care you can trust.','Done right, every time.'],
+ hotel:['Welcome to comfort.','Stay a little better.','Hospitality, perfected.'],
+ insure:['Protection you can count on.','Peace of mind, covered.','Here when it matters.'],
+ jewel:['Crafted to be treasured.','Timeless by design.','Luxury, personally yours.'],
+ legal:['Counsel you can trust.','Clear advice. Strong results.','Justice, well served.'],
+ logi:['Delivered on time.','Moving business forward.','Every mile, managed.'],
+ manu:['Precision at scale.','Made to perform.','Industry, engineered.'],
+ media:['Stories that move people.','Make your brand heard.','Attention, earned.'],
+ ngo:['Together we change lives.','Give. Grow. Impact.','Hope in action.'],
+ pet:['Happy pets, happy homes.','Care for every tail.','Love them like family.'],
+ pharma:['Science for better health.','Trusted care, proven science.','Medicine you can rely on.'],
+ real:['Spaces that shape futures.','Build where it matters.','Your next address.'],
+ retail:['Shop what you love.','Everything you need.','Easy to find. Easy to buy.'],
+ security:['Safety, without compromise.','Always watching. Always ready.','Protect what matters.'],
+ sport:['Push your limits.','Stronger every day.','Move. Train. Win.'],
+ tech:['Built for what’s next.','Smarter by design.','Technology, simplified.'],
+ telecom:['Connected, always.','Stay in touch with more.','Networks that never stop.'],
+ travel:['Discover more.','Journeys worth taking.','The world, within reach.']};
 const MONO_BY_COLOR={vibrant:[50,85],warm:[52,70],cool:[42,65],earthy:[38,35],pastel:[80,70],mono:[28,6]};
 
 function makePalette(color,r,v=0){
@@ -421,6 +451,10 @@ $('go').addEventListener('click',run);
 $('f').addEventListener('submit',e=>{e.preventDefault();run()});
 $('brand').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();run()}});
 $('shuffle').onclick=()=>{state.shuffle++;generate()};
+/* ---------- back to top ---------- */
+window.addEventListener('scroll',()=>{$('toTop').classList.toggle('show',window.scrollY>600)},{passive:true});
+$('toTop').addEventListener('click',()=>{const calm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;window.scrollTo({top:0,behavior:calm?'auto':'smooth'})});
+
 /* ---------- lead form + download ---------- */
 /* Set this to your form endpoint (WordPress admin-ajax URL, Formspree, Zapier, Make, etc.).
    Leave empty to only keep leads in this browser (localStorage). */
